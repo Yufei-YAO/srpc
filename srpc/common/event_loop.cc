@@ -33,13 +33,15 @@ EventLoop::EventLoop(){
     m_threadID = getThreadID();
     initWakeupEvent();
     initTimerEvent();
-    INFOLOG("wakeup fd%d",m_wakeFd);
+    DEBUGLOG("wakeup fd%d",m_wakeFd);
     //t_eventloop.reset(this);
     DEBUGLOG("create eventloop");
 }
 EventLoop::~EventLoop(){
     //FdEventGroup::GetGlobalFdEventGroup()->resetFdEvent(m_epollFd);   
     FdEventGroup::GetGlobalFdEventGroup()->resetFdEvent(m_wakeFd);   
+    FdEventGroup::GetGlobalFdEventGroup()->resetFdEvent(m_timeFd);   
+
 
 }
 
@@ -64,7 +66,7 @@ void EventLoop::loop(){
         int rt = epoll_wait(m_epollFd,eps,g_maxEpollWaitEvent,g_maxEpollWaitTime);
         if(rt == -1){
             ERRORLOG("EventLoop::loop epoll_wait m_epollFd=%d fails with errno=%d errstr=%s",m_epollFd,errno,strerror(errno));
-            return;
+            //return;
             continue;
         }
         INFOLOG("epoll wait return rt=%d",rt);
@@ -76,13 +78,13 @@ void EventLoop::loop(){
                 continue;
             }
             if(ep.events & EPOLLIN){
-                DEBUGLOG("epoll waitup %d in",(int)ep.data.fd);
+                DEBUGLOG("epoll wakeup %d in",(int)ep.data.fd);
                 addTask(fp->getHandler(FdEvent::Event::EPOLL_IN));
             }else if(ep.events & EPOLLOUT){
-                DEBUGLOG("epoll waitup %d out",(int)ep.data.fd);
+                DEBUGLOG("epoll wakeup %d out",(int)ep.data.fd);
                 addTask(fp->getHandler(FdEvent::Event::EPOLL_OUT));
             }else if(ep.events & EPOLLERR){
-                DEBUGLOG("epoll waitup %d err",(int)ep.data.fd);
+                DEBUGLOG("epoll wakeup %d err",(int)ep.data.fd);
                 addTask(fp->getHandler(FdEvent::Event::EPOLL_ERROR));
             }
         }
@@ -100,7 +102,7 @@ void EventLoop::stop(){
 
 void EventLoop::addEpollEvent(FdEvent::ptr fd){
     auto p = [fd,this](){
-        //ERRORLOG("EventLoop::addEpollEvent");
+        //INFOLOG("EventLoop::addEpollEvent");
         if(fd == nullptr){
 
             ERRORLOG("EventLoop::addEpollEvent");
@@ -119,12 +121,13 @@ void EventLoop::addEpollEvent(FdEvent::ptr fd){
         } 
         this->m_listenfds.insert(fd->getFd());
         //ERRORLOG("EventLoop::addEpollEvent");
-        INFOLOG("EventLoop::addEpollEvent on fd=%d", fd->getFd());
+        DEBUGLOG("EventLoop::addEpollEvent on fd=%d", fd->getFd());
     };
     if(isInLoopThread()){
         p();
     } else {
         addTask(p);
+        wakeup();
     }
 }
 void EventLoop::deleteEpollEvent(FdEvent::ptr fd){

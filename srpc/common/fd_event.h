@@ -23,6 +23,7 @@ public:
     void setNonblock();
 
     void setHandler(Event e, std::function<void()> cb, std::function<void()> errcb = nullptr);
+    void cancelHandler(Event e);
     std::function<void()> getHandler(Event e) const;
     void close();
     void cancel(Event e);

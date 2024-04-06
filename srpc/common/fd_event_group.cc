@@ -34,6 +34,9 @@ void FdEventGroup::resetFdEvent(int fd){
         return;
     }
     m_fds[fd]->m_event = epoll_event();
+    m_fds[fd]->m_inCallback = nullptr;
+    m_fds[fd]->m_outCallback = nullptr;
+    m_fds[fd]->m_errCallback = nullptr;
 }
 void FdEventGroup::expand(int fd){
     if(fd<0){

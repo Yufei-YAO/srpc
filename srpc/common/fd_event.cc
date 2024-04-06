@@ -16,6 +16,7 @@ FdEvent::FdEvent(){
     memset((void*)&m_event,0,sizeof(m_event));
 }
 FdEvent::~FdEvent(){
+    DEBUGLOG("~FdEvent");
     //if(m_fd<0) return;
     //close(m_fd);
 }
@@ -35,6 +36,7 @@ void FdEvent::setNonblock(){
 void FdEvent::setHandler(Event e, std::function<void()> cb, std::function<void()> errcb){
     m_event.data.fd = m_fd;
     if(e == Event::EPOLL_IN){
+        INFOLOG("listen read on fd=%d",m_fd);
         m_inCallback = cb;
         m_event.events|=EPOLLIN;
     }else if(e == Event::EPOLL_OUT){
@@ -42,6 +44,16 @@ void FdEvent::setHandler(Event e, std::function<void()> cb, std::function<void()
         m_event.events|=EPOLLOUT;
     }
     m_errCallback = errcb;
+}
+void FdEvent::cancelHandler(Event e){
+    if(e == Event::EPOLL_IN){
+        m_event.events&=(~EPOLLIN);
+        m_inCallback = nullptr;
+    } else if(e == Event::EPOLL_OUT){
+        m_event.events&=(~EPOLLOUT);
+        m_outCallback = nullptr;
+    }
+
 }
 std::function<void()> FdEvent::getHandler(Event e) const{
     if(e == Event::EPOLL_IN){

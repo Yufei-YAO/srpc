@@ -8,7 +8,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/)
 
 
 find_library(YAMLCPP libyaml-cpp.a)
-include_directories(${PROJECT_SOURCE_DIR})
+#include_directories(${PROJECT_SOURCE_DIR})
 
 include_directories(${PROJECT_SOURCE_DIR}/srpc)
 
@@ -33,3 +33,19 @@ target_link_libraries(test_config ${LIB_LIB})
 add_executable(test_eventLoop test/test_eventLoop.cc)
 add_dependencies(test_eventLoop srpc)
 target_link_libraries(test_eventLoop ${LIB_LIB})
+
+add_executable(test_buffer test/test_buffer.cc)
+add_dependencies(test_buffer srpc)
+target_link_libraries(test_buffer ${LIB_LIB})
+
+add_executable(test_tcpserver test/test_tcpserver.cc)
+add_dependencies(test_tcpserver srpc)
+target_link_libraries(test_tcpserver ${LIB_LIB})
+
+add_executable(test_connection test/test_connection.cc)
+add_dependencies(test_connection srpc)
+target_link_libraries(test_connection ${LIB_LIB})
+
+add_executable(test_tcpclient test/test_tcpclient.cc)
+add_dependencies(test_tcpclient srpc)
+target_link_libraries(test_tcpclient ${LIB_LIB})

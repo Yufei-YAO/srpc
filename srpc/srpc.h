@@ -18,5 +18,9 @@
 #include "protocol/abstract_protocol.h"
 #include "protocol/abstract_coder.h"
 #include "protocol/string_coder.h"
+#include "protocol/tiny_pb_protocol.h"
+#include "protocol/tiny_pb_coder.h"
+#include "net/rpc/rpc_dispatcher.h"
+
 
 

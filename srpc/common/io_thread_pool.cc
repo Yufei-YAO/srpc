@@ -18,6 +18,11 @@ IOThreadPool::IOThreadPool(int num_workers){
         m_numWorkers = num_workers;
     }
     else m_numWorkers = std::thread::hardware_concurrency();
+    if(m_numWorkers ==0){
+        m_numWorkers = 1;
+        INFOLOG("must have one workers ");
+
+    }
     INFOLOG("num of workers = %d",m_numWorkers);
 }
 
@@ -29,6 +34,7 @@ void IOThreadPool::start(){
     for(int i = 0 ; i < m_numWorkers ; ++i){
         m_workers.push_back(IOThread::ptr(new IOThread));
         m_workers.back()->start();
+        INFOLOG("workers %d start ",i);
     }
 }
 void IOThreadPool::stop(){

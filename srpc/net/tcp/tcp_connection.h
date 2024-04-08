@@ -15,7 +15,7 @@ namespace srpc{
 
 
 
-class TcpConnection{
+class TcpConnection : public std::enable_shared_from_this<TcpConnection>{
 public:
     typedef std::shared_ptr<TcpConnection> ptr;
     enum class State{
@@ -52,7 +52,10 @@ public:
     void pushSendMessage(AbstractProtocol::ptr msg, std::function<void(AbstractProtocol::ptr)> done);
     void pushReadMessage(const std::string & req_id, std::function<void(AbstractProtocol::ptr)> done);
 
+    NetAddr::ptr getLocalAddr() {return m_localAddr;}
+    NetAddr::ptr getPeerAddr() {return m_peerAddr;}
 
+    void setLocalAddr(NetAddr::ptr lo) {m_localAddr = lo;}
 
 private:
     EventLoop::ptr m_eventLoop;

@@ -14,7 +14,7 @@ include_directories(${PROJECT_SOURCE_DIR}/srpc)
 
 file(GLOB_RECURSE LIB_SRC srpc/*.cc)
 add_library(srpc SHARED ${LIB_SRC})
-set(LIB_LIB srpc pthread ${YAMLCPP})
+set(LIB_LIB srpc pthread ${YAMLCPP} protobuf)
 
 
 add_executable(test_hello test/test_hello.cc)
@@ -49,3 +49,17 @@ target_link_libraries(test_connection ${LIB_LIB})
 add_executable(test_tcpclient test/test_tcpclient.cc)
 add_dependencies(test_tcpclient srpc)
 target_link_libraries(test_tcpclient ${LIB_LIB})
+
+add_executable(test_tinyPB test/test_tinyPB.cc)
+add_dependencies(test_tinyPB srpc)
+target_link_libraries(test_tinyPB ${LIB_LIB})
+
+add_executable(test_endian test/test_endian.cc)
+
+add_executable(test_rpcclient test/test_rpcclient.cc test/order.pb.cc)
+add_dependencies(test_rpcclient srpc)
+target_link_libraries(test_rpcclient ${LIB_LIB})
+
+add_executable(test_rpcserver test/test_rpcserver.cc test/order.pb.cc)
+add_dependencies(test_rpcserver srpc)
+target_link_libraries(test_rpcserver ${LIB_LIB})

@@ -4,8 +4,7 @@
 namespace srpc{
 
 
-class AbstractProtocol {
-public:
+struct AbstractProtocol {
     typedef std::shared_ptr<AbstractProtocol> ptr;
 
 
@@ -16,7 +15,6 @@ public:
 
 
 
-protected:
     std::string m_reqID;
 
 

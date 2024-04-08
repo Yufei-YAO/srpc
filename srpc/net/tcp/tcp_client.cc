@@ -48,12 +48,21 @@ void TcpClient::connect(std::function<void()> done){
                 getsockopt(fdp->getFd(), SOL_SOCKET, SO_ERROR, &error, &error_len);
                 bool is_connect_succ = false;
                 if (error == 0) {
-                  DEBUGLOG("connect [%s] sussess", m_peerAddr->toString().c_str());
-                  is_connect_succ = true;
-                  m_conn->setState(TcpConnection::State::CONNECT);
+                    DEBUGLOG("connect [%s] sussess", m_peerAddr->toString().c_str());
+                    is_connect_succ = true;
+                    struct sockaddr_in addr;
+                    socklen_t addrLen = sizeof(addr);
+                    if (getsockname(fdp->getFd(), (struct sockaddr*)&addr, &addrLen) == -1) {
+                        //close(sockfd);
+                        //return 1;
+                    }
+
+                    IPv4NetAddr::ptr ar = std::make_shared<IPv4NetAddr>(addr);
+                    m_conn->setLocalAddr(ar);
+                    m_conn->setState(TcpConnection::State::CONNECT);
  
                 } else {
-                  ERRORLOG("connect errror, errno=%d, error=%s", errno, strerror(errno));
+                    ERRORLOG("connect errror, errno=%d, error=%s", errno, strerror(errno));
                 }
                 // 连接完后需要去掉可写事件的监听，不然会一直触发
                 fdp->cancelHandler(FdEvent::Event::EPOLL_OUT);

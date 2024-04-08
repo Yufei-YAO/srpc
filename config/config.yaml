@@ -1,4 +1,4 @@
 log:
-  level: info 
+  level: debug
 server:
   listen_port: 12345

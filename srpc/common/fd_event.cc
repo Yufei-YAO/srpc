@@ -36,7 +36,7 @@ void FdEvent::setNonblock(){
 void FdEvent::setHandler(Event e, std::function<void()> cb, std::function<void()> errcb){
     m_event.data.fd = m_fd;
     if(e == Event::EPOLL_IN){
-        INFOLOG("listen read on fd=%d",m_fd);
+        //INFOLOG("listen read on fd=%d",m_fd);
         m_inCallback = cb;
         m_event.events|=EPOLLIN;
     }else if(e == Event::EPOLL_OUT){

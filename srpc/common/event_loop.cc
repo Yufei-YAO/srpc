@@ -69,7 +69,7 @@ void EventLoop::loop(){
             //return;
             continue;
         }
-        INFOLOG("epoll wait return rt=%d",rt);
+        DEBUGLOG("epoll wait return rt=%d",rt);
         for(int i=0;i<rt;++i){
             epoll_event & ep = eps[i];
             DEBUGLOG("epoll wait return %d",(int)ep.data.fd);

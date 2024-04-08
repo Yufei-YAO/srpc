@@ -42,15 +42,18 @@ void TcpBuffer::readFromBuffer(std::vector<char>& buf, int size){
 
 void TcpBuffer::moveWriteIndex(int size){
     size_t cur = m_writeIndex +size;
-    if(cur>=m_cache.size()){
+    if(cur>m_cache.size()){
         ERRORLOG("move writeIndex out of range with buffer size=%d m_writeIndex=%d size=%d",m_size,m_readIndex,size);
         return;
     }
     m_writeIndex = cur;
+    // if(m_writeIndex == m_size){
+    //     resizeBuffer(2*m_size);
+    // }
 }
 void TcpBuffer::moveReadIndex(int size){
     size_t cur = m_readIndex +size;
-    if(cur>=m_cache.size()){
+    if(cur>m_cache.size()){
         ERRORLOG("move readIndex out of range with buffer size=%d m_readIndex=%d size=%d",m_size,m_readIndex,size);
         return;
     }
@@ -59,6 +62,15 @@ void TcpBuffer::moveReadIndex(int size){
 
 }
 
+void TcpBuffer::enlargeBuffer(int size){
+    size = m_writeIndex += size;
+    if(size < m_size){
+        return;
+    }
+    m_cache.resize(1.5*size);
+    m_size = m_cache.size();
+
+}
 void TcpBuffer::resizeBuffer(int size){
     if(size < readAble()){
         ERRORLOG("resize buffer fail with new size=%d smaller than current readAble=%d with current size=%d",size,readAble(),m_size);

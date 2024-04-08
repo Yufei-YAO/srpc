@@ -1,10 +1,11 @@
-
-
+#include <string.h>
 #include "common/fd_event_group.h"
 #include "common/log.h"
 #include "net/tcp/tcp_connection.h"
+#include "net/rpc/rpc_dispatcher.h"
 #include "protocol/string_coder.h"
-#include <string.h>
+#include "protocol/tiny_pb_coder.h"
+#include "protocol/tiny_pb_protocol.h"
 
 namespace srpc
 {
@@ -16,7 +17,7 @@ TcpConnection::TcpConnection(EventLoop::ptr event_loop, int fd, int buffer_size,
     , m_type(type){
     
     m_state = State::CONNECT;
-    m_coder.reset(new StringCoder());
+    m_coder.reset(new TinyPBCoder());
     m_inBuffer.reset(new TcpBuffer(buffer_size));
     m_outBuffer.reset(new TcpBuffer(buffer_size));
 
@@ -29,7 +30,7 @@ TcpConnection::TcpConnection(EventLoop::ptr event_loop, int fd, int buffer_size,
     , m_type(type){
     
     m_state = State::CLOSE;
-    m_coder.reset(new StringCoder());
+    m_coder.reset(new TinyPBCoder);
     m_inBuffer.reset(new TcpBuffer(buffer_size));
     m_outBuffer.reset(new TcpBuffer(buffer_size));
 
@@ -62,6 +63,7 @@ void TcpConnection::onRead(){
         DEBUGLOG("TcpConnection read on fd=%d with rt=%d readAble=%d",m_fd, rt,read_able);
         if(rt  > 0){
             m_inBuffer->moveWriteIndex(rt);
+            //INFOLOG("%d",m_inBuffer->m_cache[0]);
             if(rt == read_able){
                 continue;
             }else{
@@ -73,7 +75,7 @@ void TcpConnection::onRead(){
             is_close = true;
             break;
         }else if(rt < 0 ) {
-            INFOLOG("TcpConnection read on fd=%d with errno=%d errstr=%s",m_fd, errno, strerror(errno));
+            DEBUGLOG("TcpConnection read on fd=%d with errno=%d errstr=%s",m_fd, errno, strerror(errno));
             if(errno ==  EAGAIN){
                 is_read_all = true;
                 break;
@@ -95,21 +97,48 @@ void TcpConnection::execute(){
     if(m_type == Type::SERVER){
 
 
-        int size = m_inBuffer->readAble();
-        std::vector<char> tmp;
-        m_inBuffer->readFromBuffer(tmp,size);
+        std::vector<AbstractProtocol::ptr> tmp;
+        //INFOLOG("start decoding");
+        m_coder->decode(tmp,m_inBuffer);
+        //INFOLOG("start decoding");
+        std::vector<AbstractProtocol::ptr> ret;
 
-        std::string msg;
-        for(auto c : tmp){
-            msg+=c;
+        for(auto k : tmp){
+
+            auto sp = std::dynamic_pointer_cast<TinyPBProtocol>(k);
+            if(sp == nullptr){
+                ERRORLOG("cannot transform to TinyPBProtocol");
+                continue;
+            }
+            INFOLOG("recevive pb data:%s",sp->m_pbData.c_str());
+            TinyPBProtocol::ptr res = std::make_shared<TinyPBProtocol>();
+            auto conn = shared_from_this();
+
+            RpcDispatcher::GetRpcDispatcher()->dispatch(sp,res,conn);
+            ret.push_back(res);
+            
+        }        
+        if(tmp.size()==0){
+            INFOLOG("decode size = 0 inBufferReadAble=%d",m_inBuffer->readAble());
+            return;
         }
 
-        INFOLOG("TcpConnection execute with ret size=%d",msg.size());
-        m_outBuffer->writeToBuffer(msg.c_str(),msg.size());
+        m_coder->encode(tmp,m_outBuffer);
+        //INFOLOG("TcpConnection execute with ret size=%d",msg.size());
+        //m_outBuffer->writeToBuffer(msg.c_str(),msg.size());
         listenWrite();
     } else{
         std::vector<AbstractProtocol::ptr> msgs;
         m_coder->decode(msgs,m_inBuffer); 
+        for(auto k : msgs){
+            auto sp = std::dynamic_pointer_cast<TinyPBProtocol>(k);
+            if(sp == nullptr){
+                ERRORLOG("cannot transform to TinyPBProtocol");
+                continue;
+            }
+            INFOLOG("recevive pb data:%s",sp->m_pbData.c_str());
+            //sp->m_pbData="some thing important return";
+        }        
         for(auto msg:msgs){
             if(m_readDones.find(msg->getReqID())!= m_readDones.end()){
                 m_readDones[msg->getReqID()](msg);
@@ -195,6 +224,7 @@ void TcpConnection::clear(){
     fdp->cancelHandler(FdEvent::Event::EPOLL_IN);
     fdp->cancelHandler(FdEvent::Event::EPOLL_OUT);
     m_eventLoop->deleteEpollEvent(fdp);
+    fdp->close();
     FdEventGroup::GetGlobalFdEventGroup()->resetFdEvent(fdp->getFd());
     m_state = State::CLOSE;
 

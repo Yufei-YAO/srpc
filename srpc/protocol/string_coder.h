@@ -6,10 +6,8 @@
 namespace srpc{
 
 
-class StringProtocol : public AbstractProtocol{
-public:
-    typedef std::shared_ptr<StringProtocol> ptr;
-public:
+struct StringProtocol : public AbstractProtocol{
+typedef std::shared_ptr<StringProtocol> ptr;
     std::string info;
 
 };

@@ -8,7 +8,7 @@ namespace srpc
 class TcpBuffer{
 public:
 friend class TcpConnection;
-
+friend class TinyPBCoder;
     typedef std::shared_ptr<TcpBuffer> ptr;
 
     TcpBuffer(int size) ;
@@ -28,11 +28,12 @@ friend class TcpConnection;
     void moveReadIndex(int size);
 
     void resizeBuffer(int size);
+    void enlargeBuffer(int size);
 private:
     void adjustBuffer();
 
 
-private:
+public:
     int m_readIndex = 0;
     int m_writeIndex = 0;
     int m_size = 0;

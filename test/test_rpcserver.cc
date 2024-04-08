@@ -17,7 +17,12 @@ public:
             response->set_res_info("not enough money");
             return;
         }
+        response->set_ret_code(222);
+        response->set_res_info("suce");
         response->set_order_id("22222222");
+        if(done){
+            done->Run();
+        }
     }
 
 };
@@ -31,7 +36,7 @@ public:
 int main(){
     srpc::Config::LoadFromYaml("/home/current/srpc/config/config.yaml");
     srpc::Logger::InitGlobalLogger(srpc::StringToLogLevel(srpc::Config::GetGlobalConfig()->c_logLevel));
-    srpc::IPv4NetAddr::ptr addr = std::make_shared<srpc::IPv4NetAddr>("0.0.0.0",12345);
+    srpc::IPv4NetAddr::ptr addr = std::make_shared<srpc::IPv4NetAddr>("0.0.0.0",srpc::Config::GetGlobalConfig()->c_listenPort);
     OrderImpl::ptr oim= std::make_shared<OrderImpl>();
     srpc::RpcDispatcher::GetRpcDispatcher()->registerService(oim);
     srpc::TcpServer server(addr);

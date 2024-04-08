@@ -16,7 +16,7 @@ FdEvent::FdEvent(){
     memset((void*)&m_event,0,sizeof(m_event));
 }
 FdEvent::~FdEvent(){
-    DEBUGLOG("~FdEvent");
+    //DEBUGLOG("~FdEvent");
     //if(m_fd<0) return;
     //close(m_fd);
 }

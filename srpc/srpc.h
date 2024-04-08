@@ -21,6 +21,6 @@
 #include "protocol/tiny_pb_protocol.h"
 #include "protocol/tiny_pb_coder.h"
 #include "net/rpc/rpc_dispatcher.h"
-
-
-
+#include "net/rpc/rpc_channel.h"
+#include "net/rpc/rpc_controller.h"
+#include "net/rpc/rpc_closure.h"

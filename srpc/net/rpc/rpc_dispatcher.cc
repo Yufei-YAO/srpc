@@ -68,24 +68,28 @@ void RpcDispatcher::dispatch(AbstractProtocol::ptr req_ptr, AbstractProtocol::pt
     controller->SetLocalAddr(conn->getLocalAddr());
     controller->SetPeerAddr(conn->getPeerAddr());
     controller->SetReqID(req->m_reqID);
-
     RpcClosure::ptr closu = std::make_shared<RpcClosure>(
-        [this, rsp,rsp_msg](){
+        [rsp,rsp_msg](){
+            //exit(0);
+            INFOLOG("call closu sucee");
             if(!rsp_msg->SerializePartialToString(&rsp->m_pbData)){
                 ERRORLOG("rsp_msg serial falut");
-                this->setTinyPBError(rsp,ERROR_FAILED_SERIALIZE,"failed to deserialize rsp");
+                RpcDispatcher::GetRpcDispatcher()->setTinyPBError(rsp,ERROR_FAILED_SERIALIZE,"failed to deserialize rsp");
                 return;
             }
             rsp->m_errCode = 0;
             rsp->m_errInfo = "";
             INFOLOG("call closu sucee");
+            //closu.reset();
         }
     );
+    
 
     service->CallMethod(met, controller.get(), req_msg.get(), rsp_msg.get(), closu.get());
 //const google::protobuf::MethodDescriptor *method, google::protobuf::RpcController *controller, 
 //const google::protobuf::Message *request, google::protobuf::Message *response, google::protobuf::Closure *done
     INFOLOG("%s | call rpc success [%s]", rsp->m_reqID.c_str(), rsp_msg->ShortDebugString().c_str());
+    //sleep(10);
 
 }
 

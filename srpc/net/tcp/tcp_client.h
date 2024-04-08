@@ -22,6 +22,13 @@ public:
     void writeMessage(AbstractProtocol::ptr msg, std::function<void(AbstractProtocol::ptr)> write_done);
     void readMessage(const std::string& req_id, std::function<void(AbstractProtocol::ptr)> read_done);
 
+    void stop(){
+        if (m_eventLoop->isLooping()) {
+            m_eventLoop->stop();
+
+        }
+    }
+
 private:
     EventLoop::ptr m_eventLoop;
     NetAddr::ptr m_peerAddr;

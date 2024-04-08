@@ -113,8 +113,9 @@ void TcpConnection::execute(){
             INFOLOG("recevive pb data:%s",sp->m_pbData.c_str());
             TinyPBProtocol::ptr res = std::make_shared<TinyPBProtocol>();
             auto conn = shared_from_this();
-
+            
             RpcDispatcher::GetRpcDispatcher()->dispatch(sp,res,conn);
+            INFOLOG("out pb data:%s",res->debugPBToHex().c_str());
             ret.push_back(res);
             
         }        
@@ -123,7 +124,7 @@ void TcpConnection::execute(){
             return;
         }
 
-        m_coder->encode(tmp,m_outBuffer);
+        m_coder->encode(ret,m_outBuffer);
         //INFOLOG("TcpConnection execute with ret size=%d",msg.size());
         //m_outBuffer->writeToBuffer(msg.c_str(),msg.size());
         listenWrite();
@@ -136,12 +137,13 @@ void TcpConnection::execute(){
                 ERRORLOG("cannot transform to TinyPBProtocol");
                 continue;
             }
-            INFOLOG("recevive pb data:%s",sp->m_pbData.c_str());
+            INFOLOG("recevive pb data: %s",sp->debugPBToHex().c_str());
             //sp->m_pbData="some thing important return";
         }        
         for(auto msg:msgs){
             if(m_readDones.find(msg->getReqID())!= m_readDones.end()){
                 m_readDones[msg->getReqID()](msg);
+                m_readDones.erase(msg->getReqID());
             }else{
                 ERRORLOG("unknown request id");
             }

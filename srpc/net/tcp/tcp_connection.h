@@ -46,6 +46,7 @@ public:
     void setType(Type t){ m_type = t;}
     Type getType() {return m_type;}
 
+
     void listenRead();
     void listenWrite();
 

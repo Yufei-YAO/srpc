@@ -7,6 +7,7 @@
 #include "protocol/abstract_protocol.h"
 #include "net/tcp/tcp_connection.h"
 #include "protocol/tiny_pb_protocol.h"
+#include "net/rpc/rpc_closure.h"
 namespace srpc{
 
 
@@ -34,7 +35,6 @@ private:
 
 private:
     std::map<std::string,service_ptr> m_services;
-
 
 
 

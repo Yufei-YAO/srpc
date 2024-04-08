@@ -97,6 +97,7 @@ void EventLoop::wakeup(){
 }
 void EventLoop::stop(){
     m_isStop = true;
+    wakeup();
 }
 
 
